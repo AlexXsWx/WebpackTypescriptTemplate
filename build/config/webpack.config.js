@@ -26,7 +26,23 @@ const webpackMode = production ? 'production' : 'development'; // 'none'
 
 module.exports = {
   mode: webpackMode,
-  entry:  joinPath(paths.sourceLoc, 'js', 'index.js'),
+  entry: joinPath(paths.sourceLoc, 'ts', 'index.ts'),
+  module: {
+    rules: [
+      {
+        test: /\.ts$/,
+        exclude: /node_modules/,
+        use: [{
+          loader: 'ts-loader',
+          options: {
+            configFile: joinPath(
+              paths.projectRootAbs, 'build', 'config', 'tsconfig.json'
+            )
+          }
+        }]
+      }
+    ]
+  },
   output: {
     path: resolvePath(paths.projectRootAbs, paths.buildOutputLoc, 'js'),
     filename: 'index.js'
