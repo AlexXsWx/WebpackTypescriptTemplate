@@ -1,0 +1,29 @@
+{
+  "extends": "tslint:recommended",
+  "rules": {
+    "typedef": [
+      true,
+      "call-signature",
+      "arrow-call-signature",
+      "parameter",
+      "arrow-parameter",
+      "property-declaration",
+      "variable-declaration",
+      "member-variable-declaration",
+      "object-destructuring",
+      "array-destructuring"
+    ],
+    "object-literal-shorthand": false,
+
+    "import-spacing": false,
+    "ordered-imports": false,
+    "member-ordering": false,
+    "object-literal-sort-keys": false,
+    "curly": [ true, "ignore-same-line" ],
+    "space-before-function-paren": false,
+    "trailing-comma": {
+      "multiline": {},
+      "singleline": {}
+    }
+  }
+}

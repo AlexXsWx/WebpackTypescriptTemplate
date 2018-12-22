@@ -16,46 +16,25 @@ const WebpackPlugins = {
 const paths = {
   projectRootAbs: resolvePath(configDirName, '..', '..'),
   buildOutputLoc: joinPath('.', 'build', 'output'),
+  buildConfigLoc: joinPath('.', 'build', 'config'),
   sourceLoc:      joinPath('.', 'src')
 };
 
 const production = true;
 const webpackMode = production ? 'production' : 'development'; // 'none'
 
-//
+// Main
 
-module.exports = {
+module.exports = (env, argv) => ({
   mode: webpackMode,
   entry: joinPath(paths.sourceLoc, 'ts', 'index.ts'),
-  module: {
-    rules: [
-      {
-        test: /\.ts$/,
-        exclude: /node_modules/,
-        use: [{
-          loader: 'ts-loader',
-          options: {
-            configFile: joinPath(
-              paths.projectRootAbs, 'build', 'config', 'tsconfig.json'
-            )
-          }
-        }]
-      }
-    ]
-  },
+  module: { rules: getTypescriptRules(argv) },
   output: {
     path: resolvePath(paths.projectRootAbs, paths.buildOutputLoc, 'js'),
     filename: 'index.js'
   },
   plugins: [
-    new WebpackPlugins.Clean(
-      paths.buildOutputLoc,
-      {
-        root: paths.projectRootAbs,
-        verbose: true,
-        dry: false
-      }
-    ),
+    createCleanPlugin(paths.buildOutputLoc),
     new WebpackPlugins.Copy([
       {
         from: joinPath(paths.sourceLoc, 'index.html'),
@@ -63,9 +42,74 @@ module.exports = {
       }
     ])
   ]
-};
+});
+
+// Plugins
+
+function createCleanPlugin(localPathsToClean) {
+  return new WebpackPlugins.Clean(
+    localPathsToClean,
+    {
+      root: paths.projectRootAbs,
+      verbose: true,
+      dry: false
+    }
+  );
+}
+
+// Rules
+
+function getTypescriptRules(argv) {
+
+  const tsFilesRegex   = /\.ts$/;
+  const tsExcludeRegex = /node_modules/;
+  const tsConfigFile     = joinPath(paths.projectRootAbs, paths.buildConfigLoc, 'tsconfig.json');
+  const tsLintConfigFile = joinPath(paths.projectRootAbs, paths.buildConfigLoc, 'tslint.json');
+
+  return [
+    getTypescriptLintRule(argv),
+    getTypescriptRule()
+  ];
+
+  function getTypescriptLintRule(argv) {
+    const tsLintVerbose = getArgumentBoolean(argv, 'tslint-verbose', false);
+    return {
+      test: tsFilesRegex,
+      exclude: tsExcludeRegex,
+      enforce: 'pre',
+      use: [{
+        loader: 'tslint-loader',
+        options: {
+          tsConfigFile: tsConfigFile,
+          configFile: tsLintConfigFile,
+          formatter: tsLintVerbose ? 'verbose' : undefined
+        }
+      }]
+    };
+  }
+
+  function getTypescriptRule() {
+    return {
+      test: tsFilesRegex,
+      exclude: tsExcludeRegex,
+      use: [{
+        loader: 'ts-loader',
+        options: { configFile: tsConfigFile }
+      }]
+    };
+  }
+}
 
 // Helpers
 
 function joinPath(...args)    { return args.join(path.sep);   }
 function resolvePath(...args) { return path.resolve(...args); }
+
+function getArgumentBoolean(argv, argName, optDefaultValue) {
+  if (argv.hasOwnProperty(argName)) {
+    const valueInLowCaseStr = String(argv[argName]).toLowerCase();
+    return ['0', 'false', 'f', 'no', 'n'].includes(valueInLowCaseStr) === false;
+  } else {
+    return optDefaultValue;
+  }
+}

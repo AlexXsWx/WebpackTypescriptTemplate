@@ -1,1 +1,3 @@
-console.log('Hello typescript');
+import { logger } from "./utils/Logger.ts";
+
+logger.log("Hello typescript");

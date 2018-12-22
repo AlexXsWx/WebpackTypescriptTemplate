@@ -2,6 +2,10 @@
   "compilerOptions": {
     "allowJs": true,
     "module": "es6",
-    "target": "es5"
+    "target": "es5",
+
+    "strict": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true
   }
 }
