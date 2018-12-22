@@ -29,6 +29,7 @@ module.exports = (env, argv) => ({
   mode: webpackMode,
   entry: joinPath(paths.sourceLoc, 'ts', 'index.ts'),
   module: { rules: getTypescriptRules(argv) },
+  devtool: 'inline-source-map',
   output: {
     path: resolvePath(paths.projectRootAbs, paths.buildOutputLoc, 'js'),
     filename: 'index.js'
